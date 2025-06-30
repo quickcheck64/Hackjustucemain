@@ -51,3 +51,7 @@ async function fetchTestimonials() {
 
 // Start
 fetchTestimonials();
+
+setInterval(() => {
+  fetchTestimonies();
+}, 60 * 1000); // Refresh every 1 minute
