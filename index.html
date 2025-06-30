@@ -169,6 +169,33 @@
 </html>
 <!-- partial -->
   <script  src="./script.js"></script>
+  <script>
+  const REFRESH_INTERVAL = 2 * 60 * 1000; // 2 minutes
+  const TESTIMONIES_URL = 'http://localhost:8000/testimonies.json'; // change if needed
+  const testimonyList = document.getElementById('testimony-list'); // make sure this ID exists
+
+  async function fetchAndUpdate() {
+    try {
+      const response = await fetch(TESTIMONIES_URL);
+      if (!response.ok) throw new Error('Network error');
+      const data = await response.json();
+
+      if (!testimonyList) return; // nothing to update if element not found
+      testimonyList.innerHTML = ''; // clear existing
+
+      data.forEach(t => {
+        const li = document.createElement('li');
+        li.textContent = t.name;
+        testimonyList.appendChild(li);
+      });
+    } catch (e) {
+      console.error('Fetching testimonies failed:', e);
+    }
+  }
+
+  fetchAndUpdate();
+  setInterval(fetchAndUpdate, REFRESH_INTERVAL);
+  </script>
 
 </body>
 </html>
