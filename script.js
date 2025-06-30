@@ -1,23 +1,33 @@
 let allTestimonials = [];
+let currentIndex = 0;
 const container = document.getElementById("testimonial-container");
 
-function displayTestimonials(testimonials) {
-  container.innerHTML = "";
-  testimonials.forEach((testimonial) => {
-    const div = document.createElement("div");
-    div.className = "testimonial";
-    div.innerHTML = `
-      <p><strong>${testimonial.name}</strong> (${testimonial.country}) <img src="${testimonial.flag}" width="20" /></p>
-      <p>${testimonial.message}</p>
-      <hr/>
-    `;
-    container.appendChild(div);
-  });
-}
+function addNextTestimonial() {
+  if (allTestimonials.length === 0) return;
 
-function getRandomTestimonials(count = 10) {
-  const shuffled = [...allTestimonials].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, count);
+  // If we've reached the end, start over
+  if (currentIndex >= allTestimonials.length) {
+    currentIndex = 0;
+  }
+
+  const t = allTestimonials[currentIndex];
+
+  // Create and insert new testimonial at the top
+  const div = document.createElement("div");
+  div.className = "testimonial";
+  div.innerHTML = `
+    <p><strong>${t.name}</strong> (${t.country}) <img src="${t.flag}" width="20" /></p>
+    <p>${t.message}</p>
+    <hr/>
+  `;
+  container.insertBefore(div, container.firstChild);
+
+  // Remove last child if more than 10
+  if (container.children.length > 10) {
+    container.removeChild(container.lastChild);
+  }
+
+  currentIndex++;
 }
 
 async function fetchTestimonials() {
@@ -25,18 +35,19 @@ async function fetchTestimonials() {
     const response = await fetch("https://hack-justuce-backend.onrender.com/testimonies.json");
     if (!response.ok) throw new Error("Failed to fetch");
     allTestimonials = await response.json();
-    displayTestimonials(getRandomTestimonials());
+
+    // Load initial 10
+    for (let i = 0; i < 10; i++) {
+      addNextTestimonial();
+    }
+
+    // Set interval for rotation every 2 minutes
+    setInterval(addNextTestimonial, 120000);
+
   } catch (error) {
     console.error("Error fetching testimonials:", error);
   }
 }
 
-// Initial load
+// Start
 fetchTestimonials();
-
-// Rotate every 5 minutes (300,000 ms)
-setInterval(() => {
-  if (allTestimonials.length) {
-    displayTestimonials(getRandomTestimonials());
-  }
-}, 300000);
