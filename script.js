@@ -1,62 +1,42 @@
-const testimonialsUrl = "https://hack-justuce-backend.onrender.com/testimonies.json";
 let allTestimonials = [];
-let currentTestimonials = [];
-
 const container = document.getElementById("testimonial-container");
 
-async function fetchTestimonials() {
-  try {
-    const res = await fetch(testimonialsUrl);
-    allTestimonials = await res.json();
-    initializeRotation();
-  } catch (error) {
-    console.error("Error fetching testimonials:", error);
-    container.innerHTML = "<p>Unable to load testimonials.</p>";
-  }
-}
-
-function initializeRotation() {
-  if (allTestimonials.length < 10) {
-    container.innerHTML = "<p>Not enough testimonials to display.</p>";
-    return;
-  }
-
-  // Pick first 10
-  currentTestimonials = allTestimonials.slice(0, 10);
-  displayTestimonials(currentTestimonials);
-
-  // Start rotating
-  setInterval(() => {
-    rotateTestimonials();
-  }, 5 * 60 * 1000); // Every 5 minutes
-}
-
-function displayTestimonials(list) {
+function displayTestimonials(testimonials) {
   container.innerHTML = "";
-  list.forEach(testimonial => {
+  testimonials.forEach((testimonial) => {
     const div = document.createElement("div");
     div.className = "testimonial";
     div.innerHTML = `
-      <p><strong>${testimonial.name}</strong> - ${testimonial.country} <img src="${testimonial.flag}" alt="" style="height: 14px;"> </p>
+      <p><strong>${testimonial.name}</strong> (${testimonial.country}) <img src="${testimonial.flag}" width="20" /></p>
       <p>${testimonial.message}</p>
-      <hr />
+      <hr/>
     `;
     container.appendChild(div);
   });
 }
 
-function rotateTestimonials() {
-  const usedNames = new Set(currentTestimonials.map(t => t.name));
-  const available = allTestimonials.filter(t => !usedNames.has(t.name));
-
-  if (available.length === 0) return; // No new ones
-
-  // Remove the last one, add a new one
-  currentTestimonials.pop();
-  const newOne = available[Math.floor(Math.random() * available.length)];
-  currentTestimonials.unshift(newOne);
-  displayTestimonials(currentTestimonials);
+function getRandomTestimonials(count = 10) {
+  const shuffled = [...allTestimonials].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
 }
 
-// Start
+async function fetchTestimonials() {
+  try {
+    const response = await fetch("https://hack-justuce-backend.onrender.com/testimonies.json");
+    if (!response.ok) throw new Error("Failed to fetch");
+    allTestimonials = await response.json();
+    displayTestimonials(getRandomTestimonials());
+  } catch (error) {
+    console.error("Error fetching testimonials:", error);
+  }
+}
+
+// Initial load
 fetchTestimonials();
+
+// Rotate every 5 minutes (300,000 ms)
+setInterval(() => {
+  if (allTestimonials.length) {
+    displayTestimonials(getRandomTestimonials());
+  }
+}, 300000);
