@@ -171,38 +171,6 @@
   <script  src="./script.js"></script>
 <ul id="testimony-list"></ul>
 
-<script>
-  const REFRESH_INTERVAL = 2 * 60 * 1000; // 2 minutes
-  const TESTIMONIES_URL = 'https://hack-justuce-backend.onrender.com/testimonies.json'; // replace with your actual URL
-
-  const testimonyList = document.getElementById('testimony-list');
-
-  async function fetchAndDisplayTestimonies() {
-    try {
-      const response = await fetch(TESTIMONIES_URL);
-      if (!response.ok) throw new Error('Network response was not ok');
-      const testimonies = await response.json();
-
-      // Clear old list
-      testimonyList.innerHTML = '';
-
-      // Add new testimonies to list
-      testimonies.forEach(t => {
-        const li = document.createElement('li');
-        li.textContent = `${t.name} - ${t.message}`; // customize fields here
-        testimonyList.appendChild(li);
-      });
-    } catch (error) {
-      console.error('Failed to fetch testimonies:', error);
-    }
-  }
-
-  // Initial load
-  fetchAndDisplayTestimonies();
-
-  // Refresh every 2 minutes
-  setInterval(fetchAndDisplayTestimonies, REFRESH_INTERVAL);
-</script>
 
 </body>
 </html>
