@@ -5,6 +5,7 @@ const REFRESH_INTERVAL = 2 * 60 * 1000;
 document.addEventListener('DOMContentLoaded', () => {
   const testimonyList = document.getElementById('testimonial-container');
   const form = document.getElementById('testimony-form');
+  const successBox = document.getElementById('success-message');
 
   async function fetchAndDisplayTestimonies() {
     try {
@@ -34,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const name = document.getElementById('name').value.trim();
     const country = document.getElementById('country').value.trim();
-    const flag = document.getElementById('flag').value.trim();
+    const flag = document.getElementById('flag')?.value?.trim() || '';
     const message = document.getElementById('message').value.trim();
 
     if (!name || !country || !message) {
@@ -53,16 +54,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const result = await res.json();
       if (result.status === 'success') {
-        alert("Your testimony was submitted successfully!");
         form.reset();
         fetchAndDisplayTestimonies();
+        showSuccess("✅ Testimony submitted successfully! Pending review for approval.");
       } else {
-        alert("Failed to submit testimony: " + result.reason);
+        showSuccess("❌ Failed to submit testimony: " + (result.reason || "Unknown error"));
       }
     } catch (err) {
-      alert("Error submitting testimony. Please try again.");
+      showSuccess("❌ Error submitting testimony. Please try again.");
       console.error(err);
     }
+  }
+
+  function showSuccess(message) {
+    if (!successBox) return;
+    successBox.textContent = message;
+    successBox.style.display = 'block';
+    successBox.style.opacity = '1';
+    successBox.style.transition = 'opacity 0.8s ease-in-out';
+
+    setTimeout(() => {
+      successBox.style.opacity = '0';
+    }, 5000);
+
+    setTimeout(() => {
+      successBox.style.display = 'none';
+    }, 5800);
   }
 
   form.addEventListener('submit', submitTestimony);
