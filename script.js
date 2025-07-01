@@ -1,53 +1,72 @@
-let allTestimonials = [];
-let currentIndex = 0;
-const container = document.getElementById("testimonial-container");
+const TESTIMONY_URL = 'https://hack-justuce-backend.onrender.com/testimonies.json';
+const SUBMIT_URL = 'https://hack-justuce-backend.onrender.com/submit_testimony';
+const REFRESH_INTERVAL = 2 * 60 * 1000;
 
-function addNextTestimonial() {
-  if (allTestimonials.length === 0) return;
+document.addEventListener('DOMContentLoaded', () => {
+  const testimonyList = document.getElementById('testimony-list');
+  const form = document.getElementById('testimony-form');
 
-  // If we've reached the end, start over
-  if (currentIndex >= allTestimonials.length) {
-    currentIndex = 0;
+  async function fetchAndDisplayTestimonies() {
+    try {
+      const res = await fetch(TESTIMONY_URL);
+      if (!res.ok) throw new Error('Failed to fetch testimonies');
+      const data = await res.json();
+
+      testimonyList.innerHTML = '';
+      data.forEach(t => {
+        const li = document.createElement('li');
+        li.className = `testimony ${t.style} ${t.animation}`;
+        li.innerHTML = `
+          <div class="name"><img src="${t.flag}" alt="Flag" width="20"> <strong>${t.name}</strong> - ${t.country}</div>
+          <div class="message">"${t.message}"</div>
+          <div class="timestamp">🕒 ${new Date(t.timestamp).toLocaleString()}</div>
+        `;
+        testimonyList.appendChild(li);
+      });
+    } catch (error) {
+      console.error("Display error:", error);
+      testimonyList.innerHTML = "<li>Unable to load testimonies at this time.</li>";
+    }
   }
 
-  const t = allTestimonials[currentIndex];
+  async function submitTestimony(e) {
+    e.preventDefault();
 
-  // Create and insert new testimonial at the top
-  const div = document.createElement("div");
-  div.className = "testimonial";
-  div.innerHTML = `
-    <p><strong>${t.name}</strong> (${t.country}) <img src="${t.flag}" width="20" /></p>
-    <p>${t.message}</p>
-    <hr/>
-  `;
-  container.insertBefore(div, container.firstChild);
+    const name = document.getElementById('name').value.trim();
+    const country = document.getElementById('country').value.trim();
+    const flag = document.getElementById('flag').value.trim();
+    const message = document.getElementById('message').value.trim();
 
-  // Remove last child if more than 10
-  if (container.children.length > 10) {
-    container.removeChild(container.lastChild);
-  }
-
-  currentIndex++;
-}
-
-async function fetchTestimonials() {
-  try {
-    const response = await fetch("https://hack-justuce-backend.onrender.com/testimonies.json");
-    if (!response.ok) throw new Error("Failed to fetch");
-    allTestimonials = await response.json();
-
-    // Load initial 10
-    for (let i = 0; i < 10; i++) {
-      addNextTestimonial();
+    if (!name || !country || !message) {
+      alert("Please fill in all required fields.");
+      return;
     }
 
-    // Set interval for rotation every 2 minutes
-    setInterval(addNextTestimonial, 120000);
+    const payload = { name, country, flag, message };
 
-  } catch (error) {
-    console.error("Error fetching testimonials:", error);
+    try {
+      const res = await fetch(SUBMIT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await res.json();
+      if (result.status === 'success') {
+        alert("Your testimony was submitted successfully!");
+        form.reset();
+        fetchAndDisplayTestimonies();
+      } else {
+        alert("Failed to submit testimony: " + result.reason);
+      }
+    } catch (err) {
+      alert("Error submitting testimony. Please try again.");
+      console.error(err);
+    }
   }
-}
 
-// Start
-fetchTestimonials();
+  form.addEventListener('submit', submitTestimony);
+
+  fetchAndDisplayTestimonies();
+  setInterval(fetchAndDisplayTestimonies, REFRESH_INTERVAL);
+});
