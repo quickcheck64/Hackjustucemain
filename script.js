@@ -3,7 +3,7 @@ const SUBMIT_URL = 'https://hack-justuce-backend.onrender.com/submit_testimony';
 const REFRESH_INTERVAL = 2 * 60 * 1000;
 
 document.addEventListener('DOMContentLoaded', () => {
-  const testimonyList = document.getElementById('testimony-list');
+  const testimonyList = document.getElementById('testimonial-container');
   const form = document.getElementById('testimony-form');
 
   async function fetchAndDisplayTestimonies() {
