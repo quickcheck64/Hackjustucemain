@@ -166,6 +166,8 @@ form button:hover {
   font-weight: bold;
   margin-top: 15px;
   display: none;
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out;
 }
 
 footer {
